@@ -19,22 +19,19 @@ class EmailPermissionController (
     private val userRepository: UserRepository,
     private val emailRepository: EmailRepository) {
 
-    val counter = AtomicLong()
-
     //region GET-Methods
     @GetMapping("/{senderId}/receivers")
     fun getPermittedAccounts(@PathVariable senderId: Long): String {
         val permittedAccounts = permissionRepository.findAllBySenderId(senderId)
-
         val stringBuilder = StringBuilder()
+
         stringBuilder.append("Allowed to send emails to Account with ID: ")
+
         for(i in permittedAccounts.indices) {
-            if(i < permittedAccounts.count() - 1) {
-                stringBuilder.append(permittedAccounts[i].receiverId)
+            stringBuilder.append(permittedAccounts[i].receiverId)
+
+            if(i < permittedAccounts.count() - 1)
                 stringBuilder.append(", ")
-            }
-            else
-                stringBuilder.append(permittedAccounts[i].receiverId)
         }
         print(stringBuilder.toString())
         return stringBuilder.toString()
@@ -49,16 +46,13 @@ class EmailPermissionController (
             return "Empty"
 
         for(i in sentMails.indices) {
-            if (i < sentMails.count() - 1) {
-                val user = userRepository.findByAccountId(sentMails[i].receiverId)
-                stringBuilder.append("Recipent: " + getUserString(user))
-                stringBuilder.append(", Timestamp: " + sentMails[i].timestamp)
+            val user = userRepository.findByAccountId(sentMails[i].receiverId)
+
+            stringBuilder.append("Recipent: " + getUserString(user))
+            stringBuilder.append(", Timestamp: " + sentMails[i].timestamp)
+
+            if (i < sentMails.count() - 1)
                 stringBuilder.append(" | ")
-            } else {
-                val user = userRepository.findByAccountId(sentMails[i].receiverId)
-                stringBuilder.append("Recipent: " + getUserString(user))
-                stringBuilder.append(", Timestamp: " + sentMails[i].timestamp)
-            }
         }
 
         return stringBuilder.toString()
@@ -73,16 +67,13 @@ class EmailPermissionController (
             return "Empty"
 
         for(i in receivedMails.indices) {
-            if (i < receivedMails.count() - 1) {
-                val user = userRepository.findByAccountId(receivedMails[i].senderId)
-                stringBuilder.append("Sender: " + getUserString(user))
-                stringBuilder.append(", Timestamp: " + receivedMails[i].timestamp)
+            val user = userRepository.findByAccountId(receivedMails[i].senderId)
+
+            stringBuilder.append("Sender: " + getUserString(user))
+            stringBuilder.append(", Timestamp: " + receivedMails[i].timestamp)
+
+            if (i < receivedMails.count() - 1)
                 stringBuilder.append(" | ")
-            } else {
-                val user = userRepository.findByAccountId(receivedMails[i].senderId)
-                stringBuilder.append("Sender: " + getUserString(user))
-                stringBuilder.append(", Timestamp: " + receivedMails[i].timestamp)
-            }
         }
 
         return stringBuilder.toString()
@@ -99,13 +90,16 @@ class EmailPermissionController (
         for(i in permittedAccounts.indices) {
             if(permittedAccounts[i].receiverId == receiverId) {
                 permitted = true
+
                 val sender = userRepository.findByAccountId(senderId)
                 val receiver = userRepository.findByAccountId(receiverId)
-                stringBuilder.append("Hallo " + receiver.name + ", ich bin " + sender.name)
                 val email = Email(sender.accountId, receiver.accountId, Timestamp(System.currentTimeMillis()))
+
+                stringBuilder.append("Hallo " + receiver.name + ", ich bin " + sender.name)
                 emailRepository.save(email)
                 break
             }
+
             permitted = false
             stringBuilder.append("Permission denied")
         }
@@ -123,6 +117,7 @@ class EmailPermissionController (
     //region Helper Methods
     fun getUserString(user: User): String {
         val stringBuilder = StringBuilder()
+
         stringBuilder.append(user.name)
         stringBuilder.append(", E-Mail: " + user.email)
 

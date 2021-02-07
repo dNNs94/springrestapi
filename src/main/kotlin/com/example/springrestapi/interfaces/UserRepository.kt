@@ -7,6 +7,4 @@ import org.springframework.stereotype.Repository
 @Repository
 interface UserRepository: CrudRepository<User, Long> {
     fun findByAccountId(accountId: Long): User
-    fun findByName(name: String): MutableList<User>
-    fun findByEmail(email: String): MutableList<User>
 }
