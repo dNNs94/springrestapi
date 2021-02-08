@@ -1,15 +1,23 @@
 package com.example.springrestapi.data
 
 import java.sql.Timestamp
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
+import javax.persistence.*
 
 @Entity(name="emails")
 data class Email (
-    val senderId: Long,
-    val receiverId: Long,
+    @ManyToOne
+    @JoinColumn(
+        name="sender_user_id",
+        referencedColumnName = "id"
+    )
+    val sender: User,
+
+    @ManyToOne
+    @JoinColumn(
+        name="receiver_user_id",
+        referencedColumnName = "id"
+    )
+    val receiver: User,
     val timestamp: Timestamp,
     @Id @GeneratedValue(strategy = GenerationType.AUTO) val id: Long? = null
 )

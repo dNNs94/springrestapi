@@ -31,7 +31,7 @@ Dabei sollen die Informationen aus einer SQL-Datenbank mittels JPA-Repositories 
 
 Der Mail-Versand kann dabei zuerst durch Aufrufe von `println` simuliert werden. Für den richtigen Mailversand musst du dir leider ein Wegwerf-E-Mail-Konto erstellen. Dieses soll dann _immer_ die Absender-Adresse sein.
 
-## Zusatzaufgabe: Mailversand und Debugging
+## Zusatzaufgabe: Mailversand und Debugging :heavy_check_mark:
 
 Den Mailversand hätten wir gern in Zwei-Varianten:
 

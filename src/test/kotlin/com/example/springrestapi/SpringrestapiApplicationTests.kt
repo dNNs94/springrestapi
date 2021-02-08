@@ -19,11 +19,12 @@ class RepositoriesTests @Autowired constructor(
     val userRepository: UserRepository,
     val emailPermissionRepository: EmailPermissionRepository) {
 
-    val alice = User(23, "alice@example.com", "alice")
-    val bob = User(42, "bob@example.com", "bob")
-    val cindy = User(1337, "cindy@example.com", "cindy")
-    val aliceEmailPermission = EmailPermission(23, 42)
-    val cindyEmailPermission = EmailPermission(1337, 23)
+    private final val alice = User("alice@example.com", "alice")
+    private final val bob = User("bob@example.com", "bob")
+    private final val cindy = User("cindy@example.com", "cindy")
+    val aliceBobEmailPermission = EmailPermission(alice, bob)
+    val cindyAliceEmailPermission = EmailPermission(cindy, alice)
+    val cindyBobEmailPermission = EmailPermission(cindy, bob)
 
     @Test
     fun `When findBySenderId then return List of Receivers`() {
@@ -31,18 +32,21 @@ class RepositoriesTests @Autowired constructor(
             entityManager.persist(alice)
             entityManager.persist(bob)
             entityManager.persist(cindy)
-            entityManager.persist(aliceEmailPermission)
-            entityManager.persist(cindyEmailPermission)
+            entityManager.persist(aliceBobEmailPermission)
+            entityManager.persist(cindyAliceEmailPermission)
+            entityManager.persist(cindyBobEmailPermission)
             entityManager.flush()
         }
 
-        val found = emailPermissionRepository.findAllBySenderId(alice.accountId)
-        assertThat(found.first().receiverId).isEqualTo(bob.accountId)
+        val users = userRepository.findAll().toMutableList()
+        val found = emailPermissionRepository.findAllBySenderId(1)
+
+        assertThat(found.first().receiver.id).isEqualTo(users[1].id)
     }
 
     @Test
     fun `When findByAccountId then return User`() {
-        val found = userRepository.findByAccountId(alice.accountId)
+        val found = userRepository.findById(1).get()
         assertThat(found.name).isEqualTo(alice.name)
     }
 }

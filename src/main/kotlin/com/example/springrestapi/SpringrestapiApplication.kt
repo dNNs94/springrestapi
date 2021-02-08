@@ -7,13 +7,13 @@ import org.springframework.boot.runApplication
 class SpringrestapiApplication
 
 /**
- * ToDo: REFACTOR accountID TO BE users.id!!!!
+ * ToDo: REFACTOR accountID TO BE users.id - CHECK
  *
  * ToDo: Do REST-Controller to define routes - CHECK
  *  -> Get User by Sending User by Account ID -> Get Receiver by account ID -> Send Mail
  *
- * ToDo: Logics to send mails
- *  -> Create Dumping Email-Adress
+ * ToDo: Logics to send mails - CHECK
+ *  -> Create Dumping Email-Address
  *  -> Figure out how to send mails to yourself
  *  -> Add property to application.properties to define whether to send real mails or just log mail output to console
  *

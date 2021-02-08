@@ -5,19 +5,21 @@ import com.example.springrestapi.data.User
 import com.example.springrestapi.interfaces.EmailPermissionRepository
 import com.example.springrestapi.interfaces.EmailRepository
 import com.example.springrestapi.interfaces.UserRepository
+import com.example.springrestapi.service.EmailSenderService
+import com.example.springrestapi.util.Utils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import java.lang.StringBuilder
 import java.sql.Timestamp
-import java.util.concurrent.atomic.AtomicLong
 
 @RestController
-class EmailPermissionController (
+class EmailController (
     private val permissionRepository: EmailPermissionRepository,
     private val userRepository: UserRepository,
-    private val emailRepository: EmailRepository) {
+    private val emailRepository: EmailRepository,
+    private val emailSenderService: EmailSenderService) {
 
     //region GET-Methods
     @GetMapping("/{senderId}/receivers")
@@ -25,14 +27,15 @@ class EmailPermissionController (
         val permittedAccounts = permissionRepository.findAllBySenderId(senderId)
         val stringBuilder = StringBuilder()
 
-        stringBuilder.append("Allowed to send emails to Account with ID: ")
+        stringBuilder.append("Allowed to send emails to Accounts owned by: ")
 
         for(i in permittedAccounts.indices) {
-            stringBuilder.append(permittedAccounts[i].receiverId)
-
+            stringBuilder.append(permittedAccounts[i].receiver.id)
+            stringBuilder.append(" - " + permittedAccounts[i].receiver.name)
             if(i < permittedAccounts.count() - 1)
                 stringBuilder.append(", ")
         }
+
         print(stringBuilder.toString())
         return stringBuilder.toString()
     }
@@ -46,9 +49,9 @@ class EmailPermissionController (
             return "Empty"
 
         for(i in sentMails.indices) {
-            val user = userRepository.findByAccountId(sentMails[i].receiverId)
+            val user = userRepository.findById(sentMails[i].receiver.id!!).get()
 
-            stringBuilder.append("Recipent: " + getUserString(user))
+            stringBuilder.append("Receiver: " + getUserString(user))
             stringBuilder.append(", Timestamp: " + sentMails[i].timestamp)
 
             if (i < sentMails.count() - 1)
@@ -67,7 +70,7 @@ class EmailPermissionController (
             return "Empty"
 
         for(i in receivedMails.indices) {
-            val user = userRepository.findByAccountId(receivedMails[i].senderId)
+            val user = userRepository.findById(receivedMails[i].sender.id!!).get()
 
             stringBuilder.append("Sender: " + getUserString(user))
             stringBuilder.append(", Timestamp: " + receivedMails[i].timestamp)
@@ -88,27 +91,44 @@ class EmailPermissionController (
         var permitted = false
 
         for(i in permittedAccounts.indices) {
-            if(permittedAccounts[i].receiverId == receiverId) {
+            if(permittedAccounts[i].receiver.id == receiverId) {
                 permitted = true
 
-                val sender = userRepository.findByAccountId(senderId)
-                val receiver = userRepository.findByAccountId(receiverId)
-                val email = Email(sender.accountId, receiver.accountId, Timestamp(System.currentTimeMillis()))
+                val sender = userRepository.findById(senderId).get()
+                val receiver = userRepository.findById(receiverId).get()
+                val email = Email(sender, receiver, Timestamp(System.currentTimeMillis()))
 
-                stringBuilder.append("Hallo " + receiver.name + ", ich bin " + sender.name)
+                stringBuilder.append("Hallo " + receiver.name + ", ich bin's " + sender.name)
+                stringBuilder.append(Utils.newLine())
+                stringBuilder.append("Diese Mail wurde durch einen Spring REST Service versendet.")
+                stringBuilder.append(Utils.newLine())
+                stringBuilder.append("Für Eindrücke zum aktuellen Stand schau gern hier vorbei: ")
+                stringBuilder.append("https://github.com/dNNs94/springrestapi")
+                stringBuilder.append(Utils.newLine())
+                stringBuilder.append("Falls du mir Feedback da lassen möchtest, hast du meine richtige Mail-Adresse ja bereits.")
+                stringBuilder.append(Utils.newLine())
+                stringBuilder.append(Utils.newLine())
+                stringBuilder.append("Mit freundlichen Grüßen ")
+                stringBuilder.append(Utils.newLine())
+                stringBuilder.append(sender.name + " <" + sender.email + ">")
+                stringBuilder.append(Utils.newLine())
+                stringBuilder.append(Utils.newLine())
+                stringBuilder.append("PS: Sorry, mir ist kein besserer Name für die Wegwerf-Adresse eingefallen.")
+
                 emailRepository.save(email)
+                emailSenderService.sendEmail("Grüße von Dennis - Kotlin Spring Mail Automatisierung", stringBuilder.toString(), receiver.email)
                 break
             }
 
             permitted = false
-            stringBuilder.append("Permission denied")
         }
 
         return if(permitted) {
-            println(stringBuilder.toString())
+            //println(stringBuilder.toString())
             stringBuilder.toString()
         } else {
-            println(stringBuilder.toString())
+            stringBuilder.append("Permission denied")
+            //println(stringBuilder.toString())
             stringBuilder.toString()
         }
     }

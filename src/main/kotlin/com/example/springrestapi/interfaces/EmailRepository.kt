@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface EmailRepository: CrudRepository<Email, Long> {
-    fun findAllByReceiverId(receiverId: Long): MutableList<Email>
-    fun findAllBySenderId(senderId: Long): MutableList<Email>
+    fun findAllByReceiverId(receiverUserId: Long): MutableList<Email>
+    fun findAllBySenderId(senderUserId: Long): MutableList<Email>
 }
